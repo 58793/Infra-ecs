@@ -1,0 +1,29 @@
+name: Terraform Destroy (infra)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  destroy:
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::120569640932:role/github-actions-terraform
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: terraform init
+      - run: terraform destroy -auto-approve
