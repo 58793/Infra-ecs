@@ -41,7 +41,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name  = "app"
-      image = "public.ecr.aws/nginx/nginx:latest"
+      image = var.bootstrap_image
       portMappings = [
         { containerPort = 80, hostPort = 80, protocol = "tcp" }
       ]
@@ -65,6 +65,13 @@ resource "aws_ecs_service" "app" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+      desired_count
+    ]
+  }
 
   network_configuration {
     subnets          = module.vpc.private_subnets
